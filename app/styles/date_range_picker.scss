@@ -1,0 +1,171 @@
+$calendar-cell-height: 36px;
+$calendar-cell-width: 36px;
+
+.lark-calendar {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  text-shadow: none;
+}
+
+// Calendar Navigation (Previous Month, Next Month, Today)
+.lark-calendar .calendar-navigation {
+  list-style-type: none;
+  font-weight: bold;
+  margin: auto;
+  padding: 0 0 6px;
+  width: 60px;
+  li {
+    display: inline;
+    a.calendar-navigate {
+      display: inline-block;
+      height: 20px;
+      padding: 2px 0 0;
+      text-decoration: none;
+      width: 20px;
+      box-shadow:         0 1px 2px #999;
+      &.previous, &.next {
+        background: #fff;
+        color: #468966;
+        &:hover{
+          background: #ccc;
+        }
+        &:active{
+          background: #aaa;
+        }
+      }
+      &.previous {
+        border-radius:             10px 0 0 10px;
+      }
+      &.next {
+        border-radius:             0 10px 10px 0;
+      }
+      &.disabled{
+        &, &:hover, &:active{
+          background: #fff;
+          color: #ccc;
+          cursor: default;
+        }
+      }
+      &.today{
+        background: #468966;
+        color: #eee;
+        &:hover{
+          background: #246744;
+        }
+        &:active{
+          background: #024522;
+        }
+      }
+    }
+  }
+}
+
+// Individual Calendar Tables
+.lark-calendar table {
+  border-collapse: collapse;
+  display: inline-block;
+  font-size: 15px;
+  margin: 0 6px 12px;
+  caption {
+    /* Month names */
+    text-transform: uppercase;
+    font-size: 16px;
+  }
+  thead th, tbody td {
+    /* Cell sizes */
+    height: $calendar-cell-height;
+    line-height: $calendar-cell-height;
+    width: $calendar-cell-width;
+    text-align:center;
+  }
+  thead {
+    /* Weekday letters */
+    background: #fff;
+    color: #555;
+    border-bottom: 1px solid #555;
+    th{
+      font-weight:400;
+    }
+  }
+  tbody {
+    background: #fff;
+    td {
+      cursor: pointer;
+      &.selected {
+        background-color: #ffb03b;
+      }
+      &.stuck {
+        background-color: #e99a27;
+      }
+      &.selectable:hover {
+        background-color: #bbb;
+      }
+      &.selected:hover, &.stuck:hover {
+        background-color: #e99a27;
+      }
+      /* Today */
+      &.today {
+        background-color: #468966;
+        color: #eee;
+      }
+      &.today_selected {
+        background-color: #b64926;
+      }
+      &.today_stuck {
+        background-color: #8e2800;
+      }
+      /* Post/pre-month */
+      &.beyond {
+        background-color: #eeeeee;
+        background-image: none;
+        color: #ccc;
+      }
+      &.beyond_selected {
+        background-color: #999;
+      }
+      &.beyond_stuck {
+        background-color: #888;
+      }
+      &.unselectable {
+        color: #ccc;
+        cursor: default;
+      }
+    }
+  }
+}
+
+// Clear Selection Button
+.lark-calendar span.clear {
+  /* Clear button */
+  color: transparent;
+  display: block;
+  height: 0;
+  position: absolute;
+  width: 0;
+  span {
+    position: relative;
+    cursor: pointer;
+    display: block;
+    background:red;
+    color:white;
+    border:1px solid white;
+    border-radius:50%;
+    width: 30px;
+    height: 30px;
+    line-height: 23px;
+    left: -18px;
+    top: -18px;
+    text-align:center;
+    font-weight:400;
+    font-size:26px;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    &.active {
+      border:1px solid yellow;
+    }
+  }
+}
