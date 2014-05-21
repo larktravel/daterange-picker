@@ -1,6 +1,17 @@
 $calendar-cell-height: 36px;
 $calendar-cell-width: 36px;
 
+$lark-purple: #803dba;
+
+$selection-hover-background: #0066cc;
+$today-background: $lark-purple;
+$range-background: #99caff;
+
+.calendar-container{
+  display: inline-block;
+  border:1px dashed lime;
+}
+
 .lark-calendar {
   display: inline-block;
   margin: 0;
@@ -10,37 +21,41 @@ $calendar-cell-width: 36px;
 }
 
 // Calendar Navigation (Previous Month, Next Month, Today)
+.lark-calendar{
+  position:relative;
+}
 .lark-calendar .calendar-navigation {
+  position:absolute;
+  top:9px;
+  display:block;
+  width:100%;
   list-style-type: none;
   font-weight: bold;
-  margin: auto;
   padding: 0 0 6px;
-  width: 60px;
   li {
-    display: inline;
+    display: block;
+    &:first-child{
+      float:left;
+    }
+    &:last-child{
+      float:right;
+    }
     a.calendar-navigate {
       display: inline-block;
       height: 20px;
       padding: 2px 0 0;
       text-decoration: none;
       width: 20px;
-      box-shadow:         0 1px 2px #999;
       &.previous, &.next {
         background: #fff;
-        color: #468966;
+        color: rgba($lark-purple, 0.6);
         &:hover{
-          background: #ccc;
+          color: $lark-purple;
         }
-        &:active{
-          background: #aaa;
-        }
+        &:active{}
       }
-      &.previous {
-        border-radius:             10px 0 0 10px;
-      }
-      &.next {
-        border-radius:             0 10px 10px 0;
-      }
+      &.previous {}
+      &.next {}
       &.disabled{
         &, &:hover, &:active{
           background: #fff;
@@ -49,14 +64,8 @@ $calendar-cell-width: 36px;
         }
       }
       &.today{
-        background: #468966;
-        color: #eee;
-        &:hover{
-          background: #246744;
-        }
-        &:active{
-          background: #024522;
-        }
+        &:hover{}
+        &:active{}
       }
     }
   }
@@ -67,7 +76,7 @@ $calendar-cell-width: 36px;
   border-collapse: collapse;
   display: inline-block;
   font-size: 15px;
-  margin: 0 6px 12px;
+  margin: 10px 6px 0;
   caption {
     /* Month names */
     text-transform: uppercase;
@@ -94,27 +103,35 @@ $calendar-cell-width: 36px;
     td {
       cursor: pointer;
       &.selected {
-        background-color: #ffb03b;
+        // date(s) within range once selection is locked
+        background-color: rgba($range-background,0.3);
+        color: $selection-hover-background;
       }
       &.stuck {
-        background-color: #e99a27;
+        // date(s) within range when dragging around a stuck date
+        background-color: $range-background;
       }
       &.selectable:hover {
-        background-color: #bbb;
+        // hovering over unselected date (when there is no stuck date)
+        background-color: $selection-hover-background;
+        color: white;
       }
       &.selected:hover, &.stuck:hover {
-        background-color: #e99a27;
+        // hovering over date within selected range (including while selecting range)
+        background-color: $range-background;
       }
       /* Today */
       &.today {
-        background-color: #468966;
-        color: #eee;
+        background-color: rgba($lark-purple,0.3);
+        // simulates a border WITHIN the element
+        box-shadow: 0 0 0 1px $lark-purple inset;
+        color: $lark-purple;
       }
       &.today_selected {
-        background-color: #b64926;
+        background-color: $lark-purple;
       }
       &.today_stuck {
-        background-color: #8e2800;
+        background-color: $lark-purple;
       }
       /* Post/pre-month */
       &.beyond {

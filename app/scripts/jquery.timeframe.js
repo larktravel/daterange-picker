@@ -45,10 +45,10 @@ function Timeframe() {
 		me.scrollerDelay = 0.5;
 
 		me.buttons = {
-			previous: { label: '&larr;', element: me.options.previousButton },
-			today:    { label: 'T',      element: me.options.todayButton },
-			reset:    { label: 'R',      element: me.options.resetButton },
-			next:     { label: '&rarr;', element: me.options.nextButton }
+			previous: { label: '&#9668;', element: me.options.previousButton },
+      // today:    { label: 'T',      element: me.options.todayButton },
+      // reset:    { label: 'R',      element: me.options.resetButton },
+			next:     { label: '&#9658;', element: me.options.nextButton }
 		};
 		me.fields = { start: me.options.startField, end: me.options.endField };
 
@@ -182,7 +182,7 @@ function Timeframe() {
 	};
 
 	this._buildButtons = function() {
-		var buttonList = $('<ul>', { id: me.element.attr('id') + '_menu', class: 'calendar-navigation' });
+		var buttonList = $('<ul>', { id: me.element.attr('id') + '_menu', class: 'calendar-navigation clearfix' });
 
 		$.each(me.buttons, function(key, value) {
 			if (value.element) {
@@ -349,6 +349,7 @@ function Timeframe() {
 
 	this.eventMouseDown = function(event) {
 		var el, em;
+    // check to see if selected action is to clear
 		el = $(event.target).closest('span.clear');
 		if (el.length) {
 			el.find('span').addClass('active');
@@ -398,18 +399,24 @@ function Timeframe() {
 	this.clear = function() {
 		me.clearRange();
 		me.refreshRange();
-	};
+	};  
 
 	this.handleDateClick = function(element, couldClear) {
+    console.log("handleDateClick",element )
 		me.mousedown = me.dragging = true;
 		if (me.stuck) {
+      console.log("handleDateClick","stuck" )
+      console.log("Range has been selected", me.range.start + " - " + me.range.end);
+      
 			me.stuck = false;
 			return;
 
 		} else if (couldClear) {
+      // console.log("handleDateClick","couldClear" )
 			if (!element.hasClass('startrange')) { return; }
 
 		} else if (me.maxRange !== 1) {
+      // console.log("handleDateClick","me.maxRange !== 1" )
 			me.stuck = true;
 			setTimeout(function() {
         if (me.mousedown) { me.stuck = false; }
@@ -420,6 +427,7 @@ function Timeframe() {
 	};
 
 	this.getPoint = function(date) {
+    // console.log("getPoint", date);
 		if (me.range.start && me.range.start.toString() === date && me.range.end){
 			me.startdrag = me.range.end;
 
@@ -497,6 +505,7 @@ function Timeframe() {
 	};
 
 	this.extendRange = function(date) {
+    // console.log("extendRange", date)
 		var start, end;
 		me.clearButton.hide();
 
@@ -554,21 +563,25 @@ function Timeframe() {
 	};
 
 	this.eventMouseUp = function(event) {
+    
 		if (!me.dragging) { return; }
 
 		if (!me.stuck) {
+      // console.log("eventMouseUp", "!me.stuck")
 			me.dragging = false;
 			if (me.timer) {
 				clearInterval(me.timer);
 			}
-
 			if ($(event.target).closest('span.clear span.active').length) {
+        // console.log("eventMouseUp", "-> clearRange()")
 				me.clearRange();
 			} else if ('onFinished' in me.options) {
+        // console.log("eventMouseUp", "-> onFinished()")
 				me.options.onFinished();
 			}
 		}
 		me.mousedown = false;
+    // console.log("eventMouseUp", "-> refreshRange()")
 		me.refreshRange();
 	};
 
@@ -619,6 +632,7 @@ function Timeframe() {
 		if (me.dragging) {
 			me.refreshField('start').refreshField('end');
 		}
+    // console.log("Range has been reset", me.range.start + " - " + me.range.end);
 	};
 
 	this.setRange = function(start, end) { // TODO
