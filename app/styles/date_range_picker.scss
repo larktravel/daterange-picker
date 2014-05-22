@@ -125,7 +125,7 @@ $range-background: #99caff;
         background-color: rgba($lark-purple,0.3);
         // simulates a border WITHIN the element
         box-shadow: 0 0 0 1px $lark-purple inset;
-        color: $lark-purple;
+        color: $lark-purple !important;
       }
       &.today_selected {
         background-color: $lark-purple;
