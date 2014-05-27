@@ -45,14 +45,16 @@ function Timeframe() {
 		me.scrollerDelay = 0.5;
 
 		me.buttons = {
-			previous: { label: '&#9668;', element: me.options.previousButton },
-      // today:    { label: 'T',      element: me.options.todayButton },
-      // reset:    { label: 'R',      element: me.options.resetButton },
-			next:     { label: '&#9658;', element: me.options.nextButton }
+			previous: { label: '&larr;', element: me.options.previousButton },
+			today:    { label: 'T',      element: me.options.todayButton },
+			reset:    { label: 'R',      element: me.options.resetButton },
+			next:     { label: '&rarr;', element: me.options.nextButton }
 		};
 		me.fields = { start: me.options.startField, end: me.options.endField };
 
-		me.range = {};
+		//me.range = {};
+		me.cbkRangeSelected = options.rangeSelected;
+		me.range = me.options.range;
 		me.earliest = (typeof me.options.earliest === 'object' ? me.options.earliest : Date.parseToObject(me.options.earliest));
 		me.latest = (typeof me.options.latest === 'object' ? me.options.latest : Date.parseToObject(me.options.latest));
 		if (me.earliest && me.latest && me.earliest > me.latest) {
@@ -63,6 +65,8 @@ function Timeframe() {
 
 		me.calendars = [];
 		me.element.append($('<div>').attr('id', me.element.attr('id') + '_container'));
+		// me.element.append($('<div>').attr('startDate', new Date()));
+		// me.element.append($('<div>').attr('endDate', new Date()));
 		var months = me.months;
 		for (var month = 0 ; month < months ; ++month) {
 			me.createCalendar(month);
@@ -87,7 +91,7 @@ function Timeframe() {
 
 		var head = $('<thead>');
 		var row  = $('<tr>');
-    
+
 		for (var column = 0 ; column < me.weekdayNames.length ; ++column) {
 			var weekday = me.weekdayNames[(column + me.weekOffset) % 7];
 			var cell = $('<th>', { scope: 'col', abbr: weekday }).text(weekday.substring(0,1));
@@ -271,8 +275,14 @@ function Timeframe() {
 		var failure = me.validateField(fieldName, date);
 
 		if (failure !== 'hard') {
-			me.range[fieldName] = date;
-			field.removeClass('error');
+			if(me.options.range !== undefined)
+			{
+				me.range[fieldName] = me.options.range[fieldName];
+				field.removeClass('error');
+			} else {
+				me.range[fieldName] = date;
+				field.removeClass('error');
+			}
 		} else if (field.hasFocus) {
 			field.addClass('error');
 		}
@@ -301,6 +311,7 @@ function Timeframe() {
 	};
 
 	this.refreshField = function(fieldName) {
+
 		var field = me.fields[fieldName];
 		var initValue = field.val();
 
@@ -315,7 +326,7 @@ function Timeframe() {
     } else {
       field.removeClass('error');
     }
-    
+
 		field.hasFocus = false;
 
 		return me;
@@ -402,12 +413,10 @@ function Timeframe() {
 	};  
 
 	this.handleDateClick = function(element, couldClear) {
-    console.log("handleDateClick",element )
+
 		me.mousedown = me.dragging = true;
 		if (me.stuck) {
-      console.log("handleDateClick","stuck" )
-      console.log("Range has been selected", me.range.start + " - " + me.range.end);
-      
+			me.cbkRangeSelected(me.range);
 			me.stuck = false;
 			return;
 
@@ -490,6 +499,7 @@ function Timeframe() {
 	};
 
 	this.toggleClearButton = function(event) {
+
 		var el;
 
 		if (/*event.element().ancestors && */$(event.target).closest('td.selected').length) {
@@ -525,9 +535,13 @@ function Timeframe() {
 	};
 
 	this.validateRange = function(start, end) {
+
+		// ESL set attrs name to range
+		// console.log('validateRange - 531', start, end);
+
 		var days = parseInt((end - start) / 86400000);
-    var range;
-    
+	    var range;
+
 		if (me.maxRange) {
 			range = me.maxRange - 1;
 			if (days > range) {
@@ -595,6 +609,7 @@ function Timeframe() {
 	};
 
 	this.refreshRange = function() {
+
 		$.each(me.element.find('td'), function(i, day) {
 			var $day = $(day);
 			$day.attr('class', $day.attr('baseClass'));
@@ -636,6 +651,9 @@ function Timeframe() {
 	};
 
 	this.setRange = function(start, end) { // TODO
+
+		console.log('setRange');
+
 		var range = { start: start, end: end };
 
 		$.each(range, function(key, value) {

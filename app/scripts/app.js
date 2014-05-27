@@ -1,6 +1,5 @@
 'use strict';
 
-
 angular.module('lark', [
     'ngCookies',
     'ngResource',
@@ -9,48 +8,37 @@ angular.module('lark', [
   ])
 
   .controller('MainCtrl', function ($scope) {
-      $scope.ngCal = {
+      $scope.dpOptions = {
         // earliest possible search date
-        earliestDate: new Date(2014, 5, 22),
+        earliestDate: new Date(2014, 5, 27),
 
         // # of calenders
         months: 2,
 
         // set selected start and end date
-        startDate: new Date(2014, 5, 23),
+        startDate: new Date(2014, 5, 28),
         endDate: new Date(2014, 6, 12)
      }
+
+     $scope.daysCount = countDays($scope.dpOptions.startDate, $scope.dpOptions.endDate);
+     $scope.nightsCount = $scope.daysCount - 1;
   })
 
-  .directive('ngStart', function ($compile, $parse) {
+  .directive('ngTripduration', function ($compile, $parse) {
     return {
-      link: function ($scope, $element, $attributes, ngModel) {
-        //console.log('ng start attrs', $attributes.value);
-      }
-    }
+      replace: true,
+      template: '<div>{{daysCount}} Days / {{nightsCount}} Nights</div>'
+    };
   })
 
-  .directive('ngEnd', function ($compile, $parse) {
+  .directive('ngDatepicker', function ($compile, $parse, $document) {
     return {
-      link: function ($scope, $element, $attributes, ngModel) {
-        //console.log('ng end attrs', $attributes.value);
-      }
-    }
-  })
+      require: 'ngModel',
+      link: function (scope, $element, $attributes, ngModel) {
 
-  // now need to update the scope when the calendar is modified
-
-  .directive('ngCal', function ($compile, $parse) {
-    return {
-      link: function ($scope, $element, $attributes, ngModel) {
-
-        // console.log($scope.ngCal);
-        // console.log('attrs', $attributes);
-        // console.log('$element', $('#cal1_container'));
-
-        var earliestSearchDate = $scope.ngCal.earliestDate;
-        var startDate = $scope.ngCal.startDate;
-        var endDate = $scope.ngCal.endDate;
+        var earliestSearchDate = (scope.dpOptions.earliestDate) ? scope.dpOptions.earliestDate : new Date();
+        var startDate = (scope.dpOptions.startDate) ? scope.dpOptions.startDate : new Date();
+        var endDate = (scope.dpOptions.endDate) ? scope.dpOptions.endDate : new Date();
 
         earliestSearchDate.setMonth(earliestSearchDate.getMonth() - 1);
         startDate.setMonth(startDate.getMonth() - 1);
@@ -58,8 +46,14 @@ angular.module('lark', [
 
         $('#start').val(startDate.toString());
 
-        var func = function(range) {
-          console.log('range', range);
+        var callbackFunction = function(range) {
+          scope.dpOptions.startDate = range.start;
+          scope.dpOptions.endDate = range.end;
+
+          scope.daysCount = countDays(scope.dpOptions.startDate, scope.dpOptions.endDate);
+          scope.nightsCount = scope.daysCount - 1;
+
+          toggleClass(false);
         }
 
         var timeframe = new Timeframe();
@@ -71,15 +65,45 @@ angular.module('lark', [
             range: { start: startDate, end: endDate },
             minRange: 2,
             format: 'ddd MMM d',
-            months: $scope.ngCal.months ? $scope.ngCal.months : 2,
-            rangeSelected: func
+            months: scope.dpOptions.months ? scope.dpOptions.months : 2,
+            rangeSelected: callbackFunction
         });
 
-        $scope.$watch(timeframe.range.start, function() {
-          console.log('range start', timeframe.range.start);
+        $document.bind('click', function(event) {
+            var calendarClick = $element.find(event.target).length > 0;
+
+            if (calendarClick)
+                return;
+
+            if(event.target.innerHTML === '+')
+              return;
+
+            var target = event.target.id;
+            if(target === 'start' || target === 'end') {
+              toggleClass(true);
+            } else {
+              toggleClass(false);
+            }
         });
 
-
+        function toggleClass(visibility) {
+          if(!visibility) {
+            $element.removeClass('show');
+            $element.addClass('hide');
+          } else {
+            $element.removeClass('hide');
+            $element.addClass('show');
+          }
+        }
       }
     }
   });
+
+  function countDays(startDate, endDate) {
+    var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+
+    return Math.round(Math.abs((startDate.getTime() - endDate.getTime())/(oneDay)));
+  }
+
+
+
