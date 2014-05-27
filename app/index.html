@@ -24,12 +24,29 @@
     <![endif]-->
 
     <div id="example" class="container">
-<!--       <div id="calendars"></div> -->
 
-      <div ng-cal id="cal1" /></div>
+    <style>
 
+    .hide {
+        display: none;
+    }
+    .show {
+        display: block;
+    }
 
-    </div>
+    </style>
+
+      <div ng-tripduration></div>
+      <div id="calendar_form">
+        <div id="fields">
+          <span>
+            <input type="text" name="start" value="" id="start" ng-click="showCalendar()" />
+            &ndash;
+            <input type="text" name="end" value="" id="end" ng-click="showCalendar()" />
+          </span>
+        </div>
+      </div>
+      <div ng-datepicker id="dp1" ng-model="dp1" class="hide"></div>
 
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
