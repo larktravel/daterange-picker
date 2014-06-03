@@ -36,17 +36,18 @@
 
     </style>
 
-      <div ng-tripduration></div>
+      <div ng-tripduration ng-model="tripRequest"></div>
+
       <div id="calendar_form">
         <div id="fields">
           <span>
-            <input type="text" name="start" value="" id="start" ng-click="showCalendar()" />
+            <input type="text" name="start" value="" id="start" />
             &ndash;
-            <input type="text" name="end" value="" id="end" ng-click="showCalendar()" />
+            <input type="text" name="end" value="" id="end" />
           </span>
         </div>
       </div>
-      <div ng-datepicker id="dp1" ng-model="dp1" class="hide"></div>
+      <div ng-datepicker id="dp1" ng-model="tripRequest" class="hide"></div>
 
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -78,8 +79,10 @@
 
         <!-- build:js({.tmp,app}) scripts/scripts.js -->
         <script src="scripts/vendor/date.js"></script>
+        <script src="scripts/vendor/moment.min.js"></script>
+        <script src="scripts/vendor/jquery.timeframe.js"></script>
         <script src="scripts/app.js"></script>
-        <script src="scripts/jquery.timeframe.js"></script>
+        
         <!-- endbuild -->
 
 </body>

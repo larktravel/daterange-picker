@@ -1,5 +1,22 @@
 'use strict';
 
+
+var tripRequest = {
+  origin: 'NYC',
+  destination: 'CUN',
+  departs_at: moment('2014-06-01'),
+  returns_at: moment('2014-06-05'),
+  setRange: function(startDate, endDate){
+    tripRequest.departs_at = moment(startDate);
+    tripRequest.returns_at = moment(endDate);
+  },
+  getRange: function(){
+    var range = {start: moment(tripRequest.departs_at), end: moment(tripRequest.returns_at)}
+    return range
+  }
+}
+
+
 angular.module('lark', [
     'ngCookies',
     'ngResource',
@@ -7,84 +24,94 @@ angular.module('lark', [
     'ngRoute'
   ])
 
+
   .controller('MainCtrl', function ($scope) {
+      $scope.tripRequest = tripRequest;
       $scope.dpOptions = {
-        // earliest possible search date
         earliestDate: new Date(2014, 5, 27),
-
-        // # of calenders
-        months: 2,
-
-        // set selected start and end date
-        startDate: new Date(2014, 5, 28),
-        endDate: new Date(2014, 6, 12)
+        months: 2
      }
-
-     $scope.daysCount = countDays($scope.dpOptions.startDate, $scope.dpOptions.endDate);
-     $scope.nightsCount = $scope.daysCount - 1;
   })
 
-  .directive('ngTripduration', function ($compile, $parse) {
+
+
+  .directive('ngTripduration', function () {
     return {
       replace: true,
-      template: '<div>{{daysCount}} Days / {{nightsCount}} Nights</div>'
+      require: '?ngModel',
+      scope: {
+        ngModel: '='
+      },
+      link: function(scope, element, attrs){
+        scope.$watch("ngModel.departs_at", function(){
+          scope.tripDuration = countDays(scope.ngModel.getRange())
+        });
+        scope.$watch("ngModel.returns_at", function(){
+          scope.tripDuration = countDays(scope.ngModel.getRange())
+        });
+      },
+      template: '<div>{{tripDuration}} Nights</div>'
     };
+    function countDays(range) {
+      var oneDay = 24*60*60*1000;
+      return Math.abs(moment(range.start).diff(moment(range.end)) / (oneDay))
+    }
   })
 
-  .directive('ngDatepicker', function ($compile, $parse, $document) {
+
+
+  .directive('ngDatepicker', function ($document) {
     return {
-      require: 'ngModel',
-      link: function (scope, $element, $attributes, ngModel) {
-
-        var earliestSearchDate = (scope.dpOptions.earliestDate) ? scope.dpOptions.earliestDate : new Date();
-        var startDate = (scope.dpOptions.startDate) ? scope.dpOptions.startDate : new Date();
-        var endDate = (scope.dpOptions.endDate) ? scope.dpOptions.endDate : new Date();
-
+      require: '?ngModel',
+      link: function ($scope, $element, $attributes, ngModel) {
+        var earliestSearchDate = ($scope.dpOptions.earliestDate) ? $scope.dpOptions.earliestDate : new Date();
         earliestSearchDate.setMonth(earliestSearchDate.getMonth() - 1);
-        startDate.setMonth(startDate.getMonth() - 1);
-        endDate.setMonth(endDate.getMonth() - 1);
 
-        $('#start').val(startDate.toString());
+        var dateRange = [];
+        var timeframe = new Timeframe();
 
-        var callbackFunction = function(range) {
-          scope.dpOptions.startDate = range.start;
-          scope.dpOptions.endDate = range.end;
+        ngModel.$render = function(){
+          dateRange = ngModel.$viewValue.getRange();
+          initTimeFrame();
+        }
 
-          scope.daysCount = countDays(scope.dpOptions.startDate, scope.dpOptions.endDate);
-          scope.nightsCount = scope.daysCount - 1;
-
+        var onRangeSelected = function(range) {
+          tripRequest.setRange(range.start, range.end)
+          $scope.$apply();
           toggleClass(false);
         }
 
-        var timeframe = new Timeframe();
-        timeframe.initialize($('#' + $attributes.id + ''), {
+
+        $document.bind('click', function(event) {
+          var calendarClick = $element.find(event.target).length > 0;
+          var target = event.target.id;
+
+          if (calendarClick)
+            return;
+          
+          if(event.target.innerHTML === '+')
+            return;
+          
+          if(target === 'start' || target === 'end') {
+            toggleClass(true);
+          } else {
+            toggleClass(false);
+          }
+        });
+
+        function initTimeFrame(){
+          timeframe.initialize($('#' + $attributes.id + ''), {
             earliest: earliestSearchDate,
             resetButton: $('#reset'),
             startField: $('#start'),
             endField: $('#end'),
-            range: { start: startDate, end: endDate },
+            range: dateRange,
             minRange: 2,
-            format: 'ddd MMM d',
-            months: scope.dpOptions.months ? scope.dpOptions.months : 2,
-            rangeSelected: callbackFunction
-        });
-
-        $document.bind('click', function(event) {
-            var calendarClick = $element.find(event.target).length > 0;
-
-            if (calendarClick)
-                return;
-
-            if(event.target.innerHTML === '+')
-              return;
-
-            var target = event.target.id;
-            if(target === 'start' || target === 'end') {
-              toggleClass(true);
-            } else {
-              toggleClass(false);
-            }
-        });
+            format: 'ddd, MMM Do',
+            months: $scope.dpOptions.months ? $scope.dpOptions.months : 2,
+            rangeSelected: onRangeSelected
+          });
+        }
 
         function toggleClass(visibility) {
           if(!visibility) {
@@ -98,12 +125,3 @@ angular.module('lark', [
       }
     }
   });
-
-  function countDays(startDate, endDate) {
-    var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
-
-    return Math.round(Math.abs((startDate.getTime() - endDate.getTime())/(oneDay)));
-  }
-
-
-

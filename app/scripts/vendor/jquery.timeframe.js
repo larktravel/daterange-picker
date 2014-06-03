@@ -316,7 +316,8 @@ function Timeframe() {
 		var initValue = field.val();
 
 		if (me.range[fieldName]) {
-			field.val((typeof Date.CultureInfo === 'undefined') ? me.range[fieldName].strftime(me.format) : me.range[fieldName].toString(me.format));
+			field.val(moment(me.range[fieldName]).format(me.format));
+			// field.val((typeof Date.CultureInfo === 'undefined') ? me.range[fieldName].strftime(me.format) : me.range[fieldName].toString(me.format));
 		} else {
 			field.val('');
 		}
@@ -416,6 +417,7 @@ function Timeframe() {
 
 		me.mousedown = me.dragging = true;
 		if (me.stuck) {
+			console.log("cbkRangeSelected", me.range)
 			me.cbkRangeSelected(me.range);
 			me.stuck = false;
 			return;
@@ -595,7 +597,6 @@ function Timeframe() {
 			}
 		}
 		me.mousedown = false;
-    // console.log("eventMouseUp", "-> refreshRange()")
 		me.refreshRange();
 	};
 
@@ -636,6 +637,10 @@ function Timeframe() {
 					$day.addClass(rangeClass + 'range');
 				}
 			}
+
+			// console.log("cbkRangeSelected", me.range)
+			// me.cbkRangeSelected(me.range);
+
 			/*
 			 if (Prototype.Browser.Opera) {
 			 day.unselectable = 'on'; // Trick Opera into refreshing the selection (FIXME)
@@ -657,6 +662,7 @@ function Timeframe() {
 		var range = { start: start, end: end };
 
 		$.each(range, function(key, value) {
+			// console.log(key,value)
 			me.range[key] = Date.parseToObject(value);
 			me.refreshField(key);
 			me.parseField(key, true);
