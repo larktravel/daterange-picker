@@ -36,18 +36,23 @@
 
     </style>
 
-      <div ng-tripduration start-date="tripRequest.departs_at" end-date="tripRequest.returns_at"></div>
+      <div ng-trip-duration-display start-date="tripRequest.departs_at" end-date="tripRequest.returns_at"></div>
 
       <div id="calendar_form">
         <div id="fields">
           <span>
-            <input type="text" name="start" value="" id="start" />
+            <input type="text" name="departs_at" value="" id="departs_at" />
             &ndash;
-            <input type="text" name="end" value="" id="end" />
+            <input type="text" name="returns_at" value="" id="returns_at" />
           </span>
         </div>
       </div>
-      <div ng-datepicker id="dp1" ng-model="tripRequest" class="hide"></div>
+
+      <div ng-daterange-picker id="dp1" start-date="tripRequest.departs_at" end-date="tripRequest.returns_at" class="hide" start-field="departs_at" end-field="returns_at"></div>
+
+
+      <!-- <div ng-cloak>Departs: {{ tripRequest.departs_at.format("dddd, MMMM Do YYYY") }}</div>
+      <div ng-cloak>Returns: {{ tripRequest.returns_at.format("dddd, MMMM Do YYYY") }}</div> -->
 
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>

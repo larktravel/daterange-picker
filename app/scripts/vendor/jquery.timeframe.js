@@ -21,6 +21,9 @@ function Timeframe() {
 	var me = this;
 	var Version = '0.3';
 
+	var startFieldId
+	var endFieldId
+
 	this.initialize = function(element, options) {
 		Timeframes.push(me);
 
@@ -51,6 +54,10 @@ function Timeframe() {
 			next:     { label: '&rarr;', element: me.options.nextButton }
 		};
 		me.fields = { start: me.options.startField, end: me.options.endField };
+
+		// TODO: Clean this up and bring it better into the scope of the object
+		startFieldId = me.fields.start.attr('id').toString();
+		endFieldId   = me.fields.end.attr('id').toString();
 
 		//me.range = {};
 		me.cbkRangeSelected = options.rangeSelected;
@@ -212,22 +219,22 @@ function Timeframe() {
 	this._buildFields = function() {
 		var fieldset = $('<div>', { id: me.element.attr('id') + '_fields', class: 'timeframe_fields' });
 
-		$.each(me.fields, function(key, value) {
-			if (value){
-				value.addClass('timeframe_field').addClass(key);
-			} else {
-				var container = $('<div>', { id: key + me.element.attr('id') + '_field_container' });
-				me.fields[key] = $('<input>', { id: me.element.attr('id') + '_' + key + 'field', name: key + 'field', type: 'text', value: '' });
-				container.append($('<label>', { 'for': key + 'field' }).append(key));
-				container.append(me.fields[key]);
-				fieldset.append(container);
-			}
-		});
+		// $.each(me.fields, function(key, value) {
+		// 	if (value){
+		// 		value.addClass('timeframe_field').addClass(key);
+		// 	} else {
+		// 		var container = $('<div>', { id: key + me.element.attr('id') + '_field_container' });
+		// 		me.fields[key] = $('<input>', { id: me.element.attr('id') + '_' + key + 'field', name: key + 'field', type: 'text', value: '' });
+		// 		container.append($('<label>', { 'for': key + 'field' }).append(key));
+		// 		container.append(me.fields[key]);
+		// 		fieldset.append(container);
+		// 	}
+		// });
 
 		if (fieldset.children().length > 0) {
 			me.element.append(fieldset);
 		}
-		me.parseField('start').refreshField('start').parseField('end').refreshField('end').initDate = new Date(me.date);
+		me.parseField(startFieldId).refreshField(startFieldId).parseField(endFieldId).refreshField(endFieldId).initDate = new Date(me.date);
 
 		return me;
 	};
@@ -244,7 +251,7 @@ function Timeframe() {
 		$(document).unload(me.unregister);
 
 		// mousemove listener for Opera in _disableTextSelection
-		return me._registerFieldObserver('start')._registerFieldObserver('end')._disableTextSelection();
+		return me._registerFieldObserver(startFieldId)._registerFieldObserver(endFieldId)._disableTextSelection();
 	};
 
 	this.unregister = function() {
@@ -252,7 +259,14 @@ function Timeframe() {
 	};
 
 	this._registerFieldObserver = function(fieldName) {
+		if (fieldName == me.fields.start.attr('id')){
+			fieldName = 'start'
+		}
+		if (fieldName == me.fields.end.attr('id')){
+			fieldName = 'end'
+		}
 		var field = me.fields[fieldName];
+		// console.log("field",field)
 		field.focus(function() { field.hasFocus = true; me.parseField(fieldName, true); });
 		field.blur(function() { me.refreshField(fieldName); });
 		field.change(function() { me.parseField(fieldName, true); });
@@ -270,6 +284,14 @@ function Timeframe() {
 	// Fields
 
 	this.parseField = function(fieldName, populate) {
+
+		if (fieldName == me.fields.start.attr('id')){
+			fieldName = 'start'
+		}
+		if (fieldName == me.fields.end.attr('id')){
+			fieldName = 'end'
+		}
+
 		var field = me.fields[fieldName];
 		var date = Date.parseToObject(me.fields[fieldName].val());
 		var failure = me.validateField(fieldName, date);
@@ -312,12 +334,18 @@ function Timeframe() {
 
 	this.refreshField = function(fieldName) {
 
+		if (fieldName == me.fields.start.attr('id')){
+			fieldName = 'start'
+		}
+		if (fieldName == me.fields.end.attr('id')){
+			fieldName = 'end'
+		}
+
 		var field = me.fields[fieldName];
 		var initValue = field.val();
 
 		if (me.range[fieldName]) {
 			field.val(moment(me.range[fieldName]).format(me.format));
-			// field.val((typeof Date.CultureInfo === 'undefined') ? me.range[fieldName].strftime(me.format) : me.range[fieldName].toString(me.format));
 		} else {
 			field.val('');
 		}
@@ -340,10 +368,10 @@ function Timeframe() {
 		if ((me.earliest && date < me.earliest) || (me.latest && date > me.latest)){
 			error = 'hard';
 
-		} else if (fieldName === 'start' && me.range.end && date > me.range.end){
+		} else if (fieldName === startFieldId && me.range.end && date > me.range.end){
 			error = 'soft';
 
-		} else if (fieldName === 'end' && me.range.start && date < me.range.start) {
+		} else if (fieldName === endFieldId && me.range.start && date < me.range.start) {
 			error = 'soft';
 		}
 
@@ -405,7 +433,7 @@ function Timeframe() {
 		me.fields.start.val(me.fields.start.defaultValue || '');
 		me.fields.end.val(me.fields.end.defaultValue || '');
 		me.date = new Date(me.initDate);
-		me.parseField('start').refreshField('start').parseField('end').refreshField('end');
+		me.parseField(startFieldId).refreshField(startFieldId).parseField(endFieldId).refreshField(endFieldId);
 	};
 
 	this.clear = function() {
@@ -603,7 +631,7 @@ function Timeframe() {
 	this.clearRange = function() {
 		me.clearButton.hide().find('span').first().removeClass('active');
 		me.range.start = me.range.end = null;
-		me.refreshField('start').refreshField('end');
+		me.refreshField(startFieldId).refreshField(endFieldId);
 		if ('onClear' in me.options) {
 			me.options.onClear();
 		}
@@ -637,20 +665,10 @@ function Timeframe() {
 					$day.addClass(rangeClass + 'range');
 				}
 			}
-
-			// console.log("cbkRangeSelected", me.range)
-			// me.cbkRangeSelected(me.range);
-
-			/*
-			 if (Prototype.Browser.Opera) {
-			 day.unselectable = 'on'; // Trick Opera into refreshing the selection (FIXME)
-			 day.unselectable = null;
-			 }
-			 */
 		});
 
 		if (me.dragging) {
-			me.refreshField('start').refreshField('end');
+			me.refreshField(startFieldId).refreshField(endFieldId);
 		}
     // console.log("Range has been reset", me.range.start + " - " + me.range.end);
 	};

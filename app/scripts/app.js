@@ -5,15 +5,7 @@ var tripRequest = {
   origin: 'NYC',
   destination: 'CUN',
   departs_at: moment('2014-06-01'),
-  returns_at: moment('2014-06-05'),
-  setRange: function(startDate, endDate){
-    tripRequest.departs_at = moment(startDate);
-    tripRequest.returns_at = moment(endDate);
-  },
-  getRange: function(){
-    var range = {start: moment(tripRequest.departs_at), end: moment(tripRequest.returns_at)}
-    return range
-  }
+  returns_at: moment('2014-06-05')
 }
 
 
@@ -27,15 +19,11 @@ angular.module('lark', [
 
   .controller('MainCtrl', function ($scope) {
       $scope.tripRequest = tripRequest;
-      $scope.dpOptions = {
-        earliestDate: new Date(2014, 5, 27),
-        months: 2
-     }
   })
 
 
 
-  .directive('ngTripduration', function () {
+  .directive('ngTripDurationDisplay', function () {
     return {
       replace: true,
       scope: {
@@ -61,68 +49,85 @@ angular.module('lark', [
 
 
 
-  .directive('ngDatepicker', function ($document) {
+  .directive('ngDaterangePicker', function ($document) {
     return {
       require: '?ngModel',
-      link: function ($scope, $element, $attributes, ngModel) {
-        var earliestSearchDate = ($scope.dpOptions.earliestDate) ? $scope.dpOptions.earliestDate : new Date();
-        earliestSearchDate.setMonth(earliestSearchDate.getMonth() - 1);
+      scope: {
+        startDate:      '=startDate',
+        endDate:        '=endDate',
+        minDate:        '=minDate',
+        maxDate:        '=maxDate',
+        numMonths:      '=numMonths',
+        minDuration:    '=minDuration'
+      },
+      link: function ($scope, $element, $attrs, ngModel) {
+        var earliestSearchDate = ($scope.minDate) ? moment($scope.minDate) : moment();
+        var numMonths          = $scope.numMonths || 2;
+        var minDuration        = $scope.minDuration || 2;
+        var dateRange          = [];
+        var timeframe          = new Timeframe();
+        var startDateInput     = $attrs.startField || "start"
+        var endDateInput       = $attrs.endField || "end"
+        var initialized        = false
 
-        var dateRange = [];
-        var timeframe = new Timeframe();
+        // Watch for changes on the scoped attributes
+        $scope.$watch("startDate", function(){ onRangeUpdate() });
+        $scope.$watch("endDate", function(){ onRangeUpdate() });
 
-        ngModel.$render = function(){
-          dateRange = ngModel.$viewValue.getRange();
-          initTimeFrame();
-        }
-
-        var onRangeSelected = function(range) {
-          tripRequest.setRange(range.start, range.end)
-          $scope.$apply();
-          toggleClass(false);
-        }
-
-
+        // Hide the calendar widget when the document is clicked outside of it
         $document.bind('click', function(event) {
           var calendarClick = $element.find(event.target).length > 0;
           var target = event.target.id;
 
-          if (calendarClick)
+          if (calendarClick || (event.target.innerHTML === '+'))
             return;
-          
-          if(event.target.innerHTML === '+')
-            return;
-          
-          if(target === 'start' || target === 'end') {
+          if (target === startDateInput || target === endDateInput) {
             toggleClass(true);
           } else {
             toggleClass(false);
           }
         });
 
+        // Called when the user selects a date range
+        function onRangeSelect(range) {
+          $scope.startDate = moment(range.start);
+          $scope.endDate = moment(range.end);
+          $scope.$apply();
+          toggleClass(false);
+        }
+
+        // Called whenever the bound dates have been updated (including parent scope)
+        function onRangeUpdate(){
+          if (initialized === false){
+            dateRange = {start: moment($scope.startDate), end: moment($scope.endDate)}
+            initTimeFrame();
+            initialized = true;
+          }
+        }
+
+        // Initialize the jQuery DateRangePicker 
         function initTimeFrame(){
-          timeframe.initialize($('#' + $attributes.id + ''), {
+          timeframe.initialize($('#' + $attrs.id + ''), {
             earliest: earliestSearchDate,
-            resetButton: $('#reset'),
-            startField: $('#start'),
-            endField: $('#end'),
+            // resetButton: $('#reset'),
+            startField: $('#' + startDateInput),
+            endField: $('#' + endDateInput),
             range: dateRange,
-            minRange: 2,
+            minRange: minDuration,
             format: 'ddd, MMM Do',
-            months: $scope.dpOptions.months ? $scope.dpOptions.months : 2,
-            rangeSelected: onRangeSelected
+            months: numMonths,
+            rangeSelected: onRangeSelect
           });
         }
 
         function toggleClass(visibility) {
           if(!visibility) {
-            $element.removeClass('show');
-            $element.addClass('hide');
+            $element.removeClass('show').addClass('hide');
           } else {
-            $element.removeClass('hide');
-            $element.addClass('show');
+            $element.removeClass('hide').addClass('show');
           }
         }
+
       }
     }
   });
