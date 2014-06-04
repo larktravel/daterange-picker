@@ -38,23 +38,24 @@ angular.module('lark', [
   .directive('ngTripduration', function () {
     return {
       replace: true,
-      require: '?ngModel',
       scope: {
-        ngModel: '='
+        startDate: '=startDate',
+        endDate:   '=endDate'
       },
-      link: function(scope, element, attrs){
-        scope.$watch("ngModel.departs_at", function(){
-          scope.tripDuration = countDays(scope.ngModel.getRange())
+      link: function($scope, element, $attrs){
+        $scope.$watch("startDate", function(){
+          setDuration($scope)
         });
-        scope.$watch("ngModel.returns_at", function(){
-          scope.tripDuration = countDays(scope.ngModel.getRange())
+        $scope.$watch("endDate", function(){
+          setDuration($scope)
         });
       },
-      template: '<div>{{tripDuration}} Nights</div>'
+      template: '<div>{{duration}} Nights</div>'
     };
-    function countDays(range) {
+    function setDuration($scope) {
       var oneDay = 24*60*60*1000;
-      return Math.abs(moment(range.start).diff(moment(range.end)) / (oneDay))
+      var mSecDiff = moment($scope.startDate).diff(moment($scope.endDate))
+      $scope.duration = Math.abs(mSecDiff) / (oneDay)
     }
   })
 
